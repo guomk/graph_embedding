@@ -8,7 +8,6 @@
 data/*
 data/features/*
 */emb/*
-*/test/*
 
 # IPython
 profile_default/
