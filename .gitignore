@@ -7,6 +7,7 @@
 */.checkpoints/*
 data/*
 data/features/*
+*/emb/*
 
 # IPython
 profile_default/
