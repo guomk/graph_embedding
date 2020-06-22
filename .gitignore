@@ -15,5 +15,15 @@ data/features/*
 profile_default/
 ipython_config.py
 
+.virtual_document/*
+
+### VisualStudioCode ###
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+*.code-workspace
+
 # Remove previous ipynb_checkpoints
 #   git rm -r .ipynb_checkpoints/
