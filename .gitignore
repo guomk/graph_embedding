@@ -8,8 +8,8 @@
 */cps/*
 data/*
 data/features/*
-*/emb/*
-./script/dgi/emb/*
+emb/*
+.script/dgi/emb/*
 
 # IPython
 profile_default/
