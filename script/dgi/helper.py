@@ -60,6 +60,11 @@ class Preprocess(object):
         # ALL source nodes are TFs
         gm_tf2gene['source_renamed'] = gm_tf2gene['source'].map(lambda x: x + '_gm')
         k_tf2gene['source_renamed'] = k_tf2gene['source'].map(lambda x: x + '_k')
+        gm_tf2gene['source'] = gm_tf2gene['source_renamed']
+        k_tf2gene['source'] = k_tf2gene['source_renamed']
+        gm_tf2gene.drop(['source_renamed'], axis=1, inplace=True)
+        k_tf2gene.drop(['source_renamed'], axis=1, inplace=True)
+
 
         # Process target nodes
         # At this stage, all the `source` are common TFs, next steps is to identify target nodes
@@ -74,12 +79,11 @@ class Preprocess(object):
             # Clean up the DataFrame and save
             gm_tf2gene.drop(['source', 'target'], axis=1, inplace=True)
             k_tf2gene.drop(['source', 'target'], axis=1, inplace=True)
-            gm_tf2gene['source'] = gm_tf2gene['source_renamed']
-            k_tf2gene['source'] = k_tf2gene['source_renamed']
+            
             gm_tf2gene['target'] = gm_tf2gene['target_renamed']
             k_tf2gene['target'] = k_tf2gene['target_renamed']
-            gm_tf2gene.drop(['source_renamed', 'target_renamed'], axis=1, inplace=True)
-            k_tf2gene.drop(['source_renamed', 'target_renamed'], axis=1, inplace=True)
+            gm_tf2gene.drop(['target_renamed'], axis=1, inplace=True)
+            k_tf2gene.drop(['target_renamed'], axis=1, inplace=True)
 
         if target_remove:
             # Remove target nodes which are TFs BUT NOT part of common_tf
