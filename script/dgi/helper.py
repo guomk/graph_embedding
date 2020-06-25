@@ -4,7 +4,7 @@ import networkx as nx
 from pathlib import Path
 
 class Preprocess(object):
-    def raw2train(self, path_to_data, save=False, file_name='joint_renamed_v2', save_intermediate=False, intermediate_names=['gm_common_renamed', 'k_common_renamed', 'ppi_undirected']):
+    def raw2train(self, path_to_data, target_rename=False, target_remove=False, save=False, file_name='joint_renamed_v2', save_intermediate=False, intermediate_names=['gm_common_renamed', 'k_common_renamed', 'ppi_undirected']):
         
         # Read raw data
         path = Path(path_to_data)
@@ -65,25 +65,28 @@ class Preprocess(object):
         # At this stage, all the `source` are common TFs, next steps is to identify target nodes
         # 1. gene -- no operation
         # 2. TF but not common_tf -- remove
-        # 3. TF and part of common_tf -- rename
+        # 3. TF and part of common_tf -- rename?
 
-        # Rename target nodes which are TFs AND part of common_tf
-        gm_tf2gene['target_renamed'] = gm_tf2gene['target'].map(lambda x: x + '_gm' if x in common_tf else x)
-        k_tf2gene['target_renamed'] = k_tf2gene['target'].map(lambda x: x + '_k' if x in common_tf else x)
+        if target_rename:
+            # Rename target nodes which are TFs AND part of common_tf
+            gm_tf2gene['target_renamed'] = gm_tf2gene['target'].map(lambda x: x + '_gm' if x in common_tf else x)
+            k_tf2gene['target_renamed'] = k_tf2gene['target'].map(lambda x: x + '_k' if x in common_tf else x)
+            # Clean up the DataFrame and save
+            gm_tf2gene.drop(['source', 'target'], axis=1, inplace=True)
+            k_tf2gene.drop(['source', 'target'], axis=1, inplace=True)
+            gm_tf2gene['source'] = gm_tf2gene['source_renamed']
+            k_tf2gene['source'] = k_tf2gene['source_renamed']
+            gm_tf2gene['target'] = gm_tf2gene['target_renamed']
+            k_tf2gene['target'] = k_tf2gene['target_renamed']
+            gm_tf2gene.drop(['source_renamed', 'target_renamed'], axis=1, inplace=True)
+            k_tf2gene.drop(['source_renamed', 'target_renamed'], axis=1, inplace=True)
 
-        # Remove target nodes which are TFs BUT NOT part of common_tf
-        gm_tf2gene = gm_tf2gene[~gm_tf2gene['target'].isin(xor_tf)]
-        k_tf2gene = k_tf2gene[~k_tf2gene['target'].isin(xor_tf)]
+        if target_remove:
+            # Remove target nodes which are TFs BUT NOT part of common_tf
+            gm_tf2gene = gm_tf2gene[~gm_tf2gene['target'].isin(xor_tf)]
+            k_tf2gene = k_tf2gene[~k_tf2gene['target'].isin(xor_tf)]
 
-        # Clean up the DataFrame and save
-        gm_tf2gene.drop(['source', 'target'], axis=1, inplace=True)
-        k_tf2gene.drop(['source', 'target'], axis=1, inplace=True)
-        gm_tf2gene['source'] = gm_tf2gene['source_renamed']
-        k_tf2gene['source'] = k_tf2gene['source_renamed']
-        gm_tf2gene['target'] = gm_tf2gene['target_renamed']
-        k_tf2gene['target'] = k_tf2gene['target_renamed']
-        gm_tf2gene.drop(['source_renamed', 'target_renamed'], axis=1, inplace=True)
-        k_tf2gene.drop(['source_renamed', 'target_renamed'], axis=1, inplace=True)
+        
 
         # Save intermediate DataFrame
         if save_intermediate:

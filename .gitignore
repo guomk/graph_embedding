@@ -1,33 +1,3 @@
-### JupyterNotebooks ###
-# gitignore template for Jupyter Notebooks
-# website: http://jupyter.org/
-
-.ipynb_checkpoints
-*/.ipynb_checkpoints/*
-*/.checkpoints/*
-*/cps/*
-data/*
-data/features/*
-emb/*
-script/dgi/emb/*
-
-# IPython
-profile_default/
-ipython_config.py
-
-.virtual_document/*
-
-### VisualStudioCode ###
-.vscode/*
-!.vscode/settings.json
-!.vscode/tasks.json
-!.vscode/launch.json
-!.vscode/extensions.json
-*.code-workspace
-
-# Remove previous ipynb_checkpoints
-#   git rm -r .ipynb_checkpoints/
-
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
@@ -166,3 +136,36 @@ dmypy.json
 
 # Cython debug symbols
 cython_debug/
+
+
+### JupyterNotebooks ###
+# gitignore template for Jupyter Notebooks
+# website: http://jupyter.org/
+
+.ipynb_checkpoints
+*/.ipynb_checkpoints/*
+*/.checkpoints/*
+*/cps/*
+data/*
+data/features/*
+emb/*
+script/dgi/emb/*
+
+# IPython
+profile_default/
+ipython_config.py
+
+.virtual_document/*
+
+### VisualStudioCode ###
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+*.code-workspace
+
+# Remove previous ipynb_checkpoints
+#   git rm -r .ipynb_checkpoints/
+
+
