@@ -4,7 +4,7 @@ import networkx as nx
 from pathlib import Path
 
 class Preprocess(object):
-    def raw2train(self, path_to_data, target_rename=False, target_remove=False, save=False, file_name='joint_renamed_v2', save_intermediate=False, intermediate_names=['gm_common_renamed', 'k_common_renamed', 'ppi_undirected']):
+    def raw2train(self, path_to_data, target_rename=False, target_remove=False, save=False, file_name='joint_renamed_v2', save_intermediate=False, return_intermediate=False, intermediate_names=['gm_common_renamed', 'k_common_renamed', 'ppi_undirected']):
         
         # Read raw data
         path = Path(path_to_data)
@@ -119,6 +119,9 @@ class Preprocess(object):
         if save:
             merged_renamed[['cell_type', 'source', 'target', 'type', 'weight']].to_csv(path / f'{file_name}.csv', index=False)
         
+        if return_intermediate:
+            return merged_renamed[['cell_type', 'source', 'target', 'type', 'weight']], gm_tf2gene[['cell_type', 'source', 'target', 'type', 'weight']], k_tf2gene[['cell_type', 'source', 'target', 'type', 'weight']], ppi_undirected[['cell_type', 'source', 'target', 'type', 'weight']]
+
         return merged_renamed[['cell_type', 'source', 'target', 'type', 'weight']]
 
 
