@@ -77,8 +77,8 @@ class Preprocess(object):
             gm_tf2gene['target_renamed'] = gm_tf2gene['target'].map(lambda x: x + '_gm' if x in common_tf else x)
             k_tf2gene['target_renamed'] = k_tf2gene['target'].map(lambda x: x + '_k' if x in common_tf else x)
             # Clean up the DataFrame and save
-            gm_tf2gene.drop(['source', 'target'], axis=1, inplace=True)
-            k_tf2gene.drop(['source', 'target'], axis=1, inplace=True)
+            gm_tf2gene.drop(['target'], axis=1, inplace=True)
+            k_tf2gene.drop(['target'], axis=1, inplace=True)
             
             gm_tf2gene['target'] = gm_tf2gene['target_renamed']
             k_tf2gene['target'] = k_tf2gene['target_renamed']
