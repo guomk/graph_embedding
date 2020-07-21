@@ -48,7 +48,7 @@ from helper import Preprocess, Feature
 DATA_DIR = Path("../../data/")
 FEATURE_DIR = Path("../../data/features/")
 FEATURE_NAME = 'adjacentTFs'
-MODEL_NAME='weightedGSAGE_128_128_relu_20_5_adjacentTF_1e-4'
+MODEL_NAME='test'
 
 data_processor = Preprocess()
 
@@ -59,9 +59,9 @@ df = data_processor.raw2train(DATA_DIR)
 
 # %%
 # Experiment with weight information
-_mean = df[df['weight'] != 'NA']['weight'].mean()
+# _mean = df[df['weight'] != 'NA']['weight'].mean()
 
-df['weight'] = df['weight'].map(lambda x: _mean if x=='NA' else x)
+# df['weight'] = df['weight'].map(lambda x: _mean if x=='NA' else x)
 
 # %% [markdown]
 # ## Feature extration
@@ -81,7 +81,9 @@ except:
 # ## Read graph
 
 # %%
-G = StellarDiGraph(edges=df[['source', 'target', 'weight']], nodes=feature_df, edge_weight_column='weight')
+# G = StellarDiGraph(edges=df[['source', 'target', 'weight']], nodes=feature_df, edge_weight_column='weight')
+G = StellarDiGraph(edges=df[['source', 'target']], nodes=feature_df)
+
 print(G.info())
 
 # %% [markdown]
@@ -97,11 +99,11 @@ print(G.info())
 # %%
 # HinSAGE model 
 graphsage_generator = DirectedGraphSAGENodeGenerator(
-    G, batch_size=50, in_samples=[20, 5], out_samples=[20, 5]
+    G, batch_size=50, in_samples=[15, 5, 5], out_samples=[15, 5, 5]
 )
 
 graphsage_model = DirectedGraphSAGE(
-    layer_sizes=[128, 128], activations=["relu", "relu"], generator=graphsage_generator
+    layer_sizes=[64, 64, 64], activations=["relu", "relu", "relu"], generator=graphsage_generator
 )
 
 
@@ -128,7 +130,7 @@ model.compile(loss=tf.nn.sigmoid_cross_entropy_with_logits,
 
 
 # %%
-epochs = 700
+epochs =1
 
 
 # %%
