@@ -14,15 +14,14 @@ import numpy as np
 
 from stellargraph.mapper import (
     CorruptedGenerator,
-    FullBatchNodeGenerator,
     DirectedGraphSAGENodeGenerator,
-    HinSAGENodeGenerator,
 )
 from stellargraph import StellarDiGraph
 from stellargraph.layer import DeepGraphInfomax, DirectedGraphSAGE, HinSAGE
 
 from stellargraph import datasets
 from stellargraph.utils import plot_history
+from stellargraph.random import set_seed
 
 import pandas as pd
 from matplotlib import pyplot as plt
@@ -41,6 +40,9 @@ if tf.test.gpu_device_name():
 from pathlib import Path
 from helper import Preprocess, Feature
 
+set_seed(0)
+tf.random.set_seed(0)
+
 # %% [markdown]
 # ## Load graph and node features
 
@@ -48,7 +50,7 @@ from helper import Preprocess, Feature
 DATA_DIR = Path("../../data/")
 FEATURE_DIR = Path("../../data/features/")
 FEATURE_NAME = 'adjacentTFs'
-MODEL_NAME='test'
+MODEL_NAME='30_10'
 
 data_processor = Preprocess()
 
@@ -56,12 +58,7 @@ data_processor = Preprocess()
 # %%
 df = data_processor.raw2train(DATA_DIR)
 
-
-# %%
-# Experiment with weight information
-# _mean = df[df['weight'] != 'NA']['weight'].mean()
-
-# df['weight'] = df['weight'].map(lambda x: _mean if x=='NA' else x)
+df
 
 # %% [markdown]
 # ## Feature extration
@@ -81,9 +78,7 @@ except:
 # ## Read graph
 
 # %%
-# G = StellarDiGraph(edges=df[['source', 'target', 'weight']], nodes=feature_df, edge_weight_column='weight')
 G = StellarDiGraph(edges=df[['source', 'target']], nodes=feature_df)
-
 print(G.info())
 
 # %% [markdown]
@@ -99,11 +94,11 @@ print(G.info())
 # %%
 # HinSAGE model 
 graphsage_generator = DirectedGraphSAGENodeGenerator(
-    G, batch_size=50, in_samples=[15, 5, 5], out_samples=[15, 5, 5]
+    G, batch_size=50, in_samples=[30, 10], out_samples=[30, 10], seed=0
 )
 
 graphsage_model = DirectedGraphSAGE(
-    layer_sizes=[64, 64, 64], activations=["relu", "relu", "relu"], generator=graphsage_generator
+    layer_sizes=[64, 64], activations=["relu", "relu"], generator=graphsage_generator
 )
 
 
@@ -130,7 +125,7 @@ model.compile(loss=tf.nn.sigmoid_cross_entropy_with_logits,
 
 
 # %%
-epochs =1
+epochs = 300
 
 
 # %%
@@ -207,7 +202,5 @@ plt.title(f"TSNE visualization of HinSAGE embeddings for {MODEL_NAME}")
 plt.savefig(f'./img/full/{MODEL_NAME}.png', dpi=150)
 # plt.show()
 
-
-# %%
 
 

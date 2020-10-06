@@ -1,0 +1,6 @@
+result/*
+emb/*
+img/*
+cps/*
+.ipynb_checkpoints/*
+/__pycache__/
