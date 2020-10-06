@@ -14,7 +14,9 @@ import numpy as np
 
 from stellargraph.mapper import (
     CorruptedGenerator,
+    FullBatchNodeGenerator,
     DirectedGraphSAGENodeGenerator,
+    HinSAGENodeGenerator,
 )
 from stellargraph import StellarDiGraph
 from stellargraph.layer import DeepGraphInfomax, DirectedGraphSAGE, HinSAGE
@@ -38,10 +40,10 @@ if tf.test.gpu_device_name():
   print('Default GPU Device:{}'.format(tf.test.gpu_device_name()))
 
 from pathlib import Path
-from helper import Preprocess, Feature
+from helper import PreprocessForTrail, FeatureForTrail
 
-set_seed(0)
-tf.random.set_seed(0)
+set_seed(2)
+tf.random.set_seed(2)
 
 # %% [markdown]
 # ## Load graph and node features
@@ -49,14 +51,14 @@ tf.random.set_seed(0)
 # %%
 DATA_DIR = Path("../../data/")
 FEATURE_DIR = Path("../../data/features/")
-FEATURE_NAME = ''
-MODEL_NAME='30_10'
+FEATURE_NAME = 'adjacentTFs_trail'
+MODEL_NAME='trail_baseline_128_16'
 
-data_processor = Preprocess()
+data_processor = PreprocessForTrail()
 
 
 # %%
-df = data_processor.raw2train(DATA_DIR)
+df = data_processor.raw2train(DATA_DIR, target_rename=True) # we rename TFs that act as targets
 
 df
 
@@ -72,7 +74,13 @@ try:
 except:
     print('Generating features...')
     common_tf = set(data_processor.raw2tf(DATA_DIR, option='intersection')['tf'])
-    feature_df = Feature().adjacentTFs(df, common_tf)
+    feature_df = FeatureForTrail().adjacentTFs(df, common_tf)
+
+
+# %%
+# feature_df
+# feature_backup = feature_df.copy(deep=True)
+# feature_backup.to_csv(FEATURE_DIR / f'{FEATURE_NAME}.csv', index=True)
 
 # %% [markdown]
 # ## Read graph
@@ -94,11 +102,11 @@ print(G.info())
 # %%
 # HinSAGE model 
 graphsage_generator = DirectedGraphSAGENodeGenerator(
-    G, batch_size=50, in_samples=[30, 10], out_samples=[30, 10], seed=0
+    G, batch_size=50, in_samples=[30, 5], out_samples=[30, 5]
 )
 
 graphsage_model = DirectedGraphSAGE(
-    layer_sizes=[64, 64], activations=["relu", "relu"], generator=graphsage_generator
+    layer_sizes=[128, 16], activations=["relu", "relu"], generator=graphsage_generator
 )
 
 
@@ -200,7 +208,10 @@ ax.set(aspect="equal", xlabel="$X_1$", ylabel="$X_2$")
 plt.title(f"TSNE visualization of HinSAGE embeddings for {MODEL_NAME}")
 
 plt.savefig(f'./img/full/{MODEL_NAME}.png', dpi=150)
-# plt.show()
+plt.show()
+
+
+# %%
 
 
 

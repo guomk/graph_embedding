@@ -195,6 +195,52 @@ class Feature(object):
         features = dict(zip(nodes, map(node2neighbors, nodes)))
         feature_df = pd.DataFrame.from_dict(features, orient='index')
         return feature_df
+    
+    
+class Feature(object):
+    def onehot_names(self, df):
+        nodes = set(df['source']).union(set(df['target']))
+        nodes = list(nodes)
+        nodes.sort()
+        node_df = pd.DataFrame(nodes)
+
+        # Create one-hot encoding df
+        onehot_df = pd.get_dummies(node_df, prefix='node')
+        onehot_df.index = nodes
+        # onehot_df['feature'] = onehot_df.index.map(lambda x: onehot_df.loc[x].to_numpy())
+        # onehot_df = onehot_df[['feature']]
+        return onehot_df
+
+    def node2deg(self, df):
+        nx_graph = nx.from_pandas_edgelist(df[['source', 'target', 'weight']], 'source', 'target', edge_attr='weight', create_using=nx.DiGraph)
+        nodes = nx_graph.nodes()
+        return pd.DataFrame(list(nx_graph.degree(nodes)), index=nodes)[[1]]
+
+    def adjacentTFs(self, df, common_tf):
+        common_tf_k = [_tf + 'k' for _tf in common_tf]
+        common_tf_gm = [_tf + '_gm' for _tf in common_tf]
+        common_tf = common_tf_k + common_tf_gm
+        common_tf.sort()
+
+        d = dict()
+        for i, tf in enumerate(common_tf):
+            d[tf] = i
+
+        nodes = list(set(df['source']).union(set(df['target'])))
+
+        def node2neighbors(node, df=df):
+            feature = np.array([0] * len(common_tf))
+            a = df['target'] == node
+            b = df['source'].isin(common_tf)
+            regulators = list(df[a & b]['source'])
+            linked_tf_pos = list(map(lambda tf: d[tf], regulators))
+            feature[linked_tf_pos] = 1
+            return feature
+
+        features = dict(zip(nodes, map(node2neighbors, nodes)))
+        feature_df = pd.DataFrame.from_dict(features, orient='index')
+        return feature_df
+
 
 
 class PreprocessForTrail(object):
@@ -324,50 +370,29 @@ class PreprocessForTrail(object):
         # Read raw data
         path = Path(path_to_data)
         gm = pd.read_csv(path / 'EC-003-NET.edgeList_TSS_GM12878.tsv', sep='\t', header=None)
-        k = pd.read_csv(path / 'EC-003-NET.edgeList_TSS_GM12878.tsv', sep='\t', header=None)
+        common_tf = pd.read_csv(path / 'common_tf.csv', header=0)
         gm.columns = ['cell_type', 'source', 'target', 'type', 'weight']
-        k.columns = ['cell_type', 'source', 'target', 'type', 'weight']
 
         # Extract TFs
         gm12878_tf = set(gm['source'])
-        k562_tf = set(k['source'])
+        common_tf = set(common_tf['tf'])
         if option == 'intersection':
-            common_tf = set(k562_tf.intersection(gm12878_tf))
+            common_tf = common_tf
             return pd.DataFrame(common_tf, columns=['tf'])
         elif option == 'union':
-            all_tf = set(k562_tf.union(k562_tf))
-            return pd.DataFrame(all_tf, columns=['tf'])
+            return pd.DataFrame(gm12878_tf, columns=['tf'])
         elif option == 'xor':
-            common_tf = set(k562_tf.intersection(gm12878_tf))
-            all_tf = set(k562_tf.union(k562_tf))
+            common_tf = set(common_tf.intersection(gm12878_tf))
+            all_tf = gm12878_tf
             xor_tf = all_tf.difference(common_tf)
             return pd.DataFrame(xor_tf, columns=['tf'])
         else:
             raise InvalidOptionException(f'{option} is not a valid option')
-    
-    
-class Feature(object):
-    def onehot_names(self, df):
-        nodes = set(df['source']).union(set(df['target']))
-        nodes = list(nodes)
-        nodes.sort()
-        node_df = pd.DataFrame(nodes)
 
-        # Create one-hot encoding df
-        onehot_df = pd.get_dummies(node_df, prefix='node')
-        onehot_df.index = nodes
-        # onehot_df['feature'] = onehot_df.index.map(lambda x: onehot_df.loc[x].to_numpy())
-        # onehot_df = onehot_df[['feature']]
-        return onehot_df
-
-    def node2deg(self, df):
-        nx_graph = nx.from_pandas_edgelist(df[['source', 'target', 'weight']], 'source', 'target', edge_attr='weight', create_using=nx.DiGraph)
-        nodes = nx_graph.nodes()
-        return pd.DataFrame(list(nx_graph.degree(nodes)), index=nodes)[[1]]
-
+class FeatureForTrail(object):
     def adjacentTFs(self, df, common_tf):
-        common_tf_k = [_tf + '_gm1' for _tf in common_tf]
-        common_tf_gm = [_tf + '_gm2' for _tf in common_tf]
+        common_tf_k = [_tf + '_gm2' for _tf in common_tf]
+        common_tf_gm = [_tf + '_gm1' for _tf in common_tf]
         common_tf = common_tf_k + common_tf_gm
         common_tf.sort()
 
@@ -389,7 +414,6 @@ class Feature(object):
         features = dict(zip(nodes, map(node2neighbors, nodes)))
         feature_df = pd.DataFrame.from_dict(features, orient='index')
         return feature_df
-
 
 class InvalidOptionException(Exception):
     pass
