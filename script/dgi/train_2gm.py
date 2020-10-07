@@ -42,8 +42,8 @@ if tf.test.gpu_device_name():
 from pathlib import Path
 from helper import PreprocessForTrail, FeatureForTrail
 
-set_seed(2)
-tf.random.set_seed(2)
+set_seed(0)
+tf.random.set_seed(0)
 
 # %% [markdown]
 # ## Load graph and node features
