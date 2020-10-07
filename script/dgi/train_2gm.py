@@ -133,7 +133,7 @@ model.compile(loss=tf.nn.sigmoid_cross_entropy_with_logits,
 
 
 # %%
-epochs = 300
+epochs = 400
 
 
 # %%
