@@ -175,9 +175,9 @@ emb_transformed = pd.DataFrame(trans.fit_transform(all_embeddings), index=G.node
 
 # %%
 def geneType(name):
-    if name[-2:] == '_k':
+    if name[-2:] == '_gm2':
         return 1
-    elif name[-3:] == '_gm':
+    elif name[-3:] == '_gm1':
         return 2
     else:
         return 0
