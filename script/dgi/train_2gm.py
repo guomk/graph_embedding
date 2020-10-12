@@ -52,7 +52,7 @@ tf.random.set_seed(0)
 DATA_DIR = Path("../../data/")
 FEATURE_DIR = Path("../../data/features/")
 FEATURE_NAME = 'adjacentTFs_trail'
-MODEL_NAME='trail_baseline_128_16'
+MODEL_NAME='trial_128_16_100_5'
 
 data_processor = PreprocessForTrail()
 
@@ -102,7 +102,7 @@ print(G.info())
 # %%
 # HinSAGE model 
 graphsage_generator = DirectedGraphSAGENodeGenerator(
-    G, batch_size=50, in_samples=[30, 5], out_samples=[30, 5]
+    G, batch_size=50, in_samples=[100, 5], out_samples=[100, 5]
 )
 
 graphsage_model = DirectedGraphSAGE(
@@ -169,46 +169,46 @@ emb_model = Model(inputs=x_emb_in, outputs=x_emb_out)
 # %%
 all_embeddings = emb_model.predict(graphsage_generator.flow(G.nodes()))
 
-trans = TSNE(n_components=2, random_state=0)
-emb_transformed = pd.DataFrame(trans.fit_transform(all_embeddings), index=G.nodes())
+# trans = TSNE(n_components=2, random_state=0)
+# emb_transformed = pd.DataFrame(trans.fit_transform(all_embeddings), index=G.nodes())
 
 
 # %%
 def geneType(name):
-    if name[-2:] == '_gm2':
+    if name[-4:] == '_gm2':
         return 1
-    elif name[-3:] == '_gm1':
+    elif name[-4:] == '_gm1':
         return 2
     else:
         return 0
 
-emb_transformed['type'] = emb_transformed.index.map(geneType)
+# emb_transformed['type'] = emb_transformed.index.map(geneType)
 
 
 # %%
 emb = pd.DataFrame(all_embeddings, index=G.nodes())
 emb['type'] = emb.index.map(geneType)
-emb[emb.index == 'ATF3_gm']
+# emb[emb.index == 'ATF3_gm']
 emb.to_csv(f'./emb/{MODEL_NAME}.csv', index=True, header=True)
 
 
 # %%
-alpha = 0.7
+# alpha = 0.7
 
-fig, ax = plt.subplots(figsize=(7, 7))
-ax.scatter(
-    emb_transformed[0],
-    emb_transformed[1],
-    c=emb_transformed["type"],
-#     cmap="Paired",
-    alpha=alpha,
-    s=5
-)
-ax.set(aspect="equal", xlabel="$X_1$", ylabel="$X_2$")
-plt.title(f"TSNE visualization of HinSAGE embeddings for {MODEL_NAME}")
+# fig, ax = plt.subplots(figsize=(7, 7))
+# ax.scatter(
+#     emb_transformed[0],
+#     emb_transformed[1],
+#     c=emb_transformed["type"],
+# #     cmap="Paired",
+#     alpha=alpha,
+#     s=5
+# )
+# ax.set(aspect="equal", xlabel="$X_1$", ylabel="$X_2$")
+# plt.title(f"TSNE visualization of HinSAGE embeddings for {MODEL_NAME}")
 
-plt.savefig(f'./img/full/{MODEL_NAME}.png', dpi=150)
-plt.show()
+# plt.savefig(f'./img/full/{MODEL_NAME}.png', dpi=150)
+# plt.show()
 
 
 # %%
