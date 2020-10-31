@@ -4,3 +4,5 @@ img/*
 cps/*
 .ipynb_checkpoints/*
 /__pycache__/
+
+.vscode/*
