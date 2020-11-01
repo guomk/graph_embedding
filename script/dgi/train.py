@@ -17,7 +17,7 @@ from stellargraph.mapper import (
     DirectedGraphSAGENodeGenerator,
 )
 from stellargraph import StellarDiGraph
-from stellargraph.layer import DeepGraphInfomax, DirectedGraphSAGE, HinSAGE
+from stellargraph.layer import DeepGraphInfomax, DirectedGraphSAGE, HinSAGE, MeanPoolingAggregator
 
 from stellargraph import datasets
 from stellargraph.utils import plot_history
@@ -50,7 +50,7 @@ tf.random.set_seed(0)
 DATA_DIR = Path("../../data/")
 FEATURE_DIR = Path("../../data/features/")
 FEATURE_NAME = 'adjacentTFs'
-MODEL_NAME='30_10'
+MODEL_NAME='renamed_genes'
 
 data_processor = Preprocess()
 
@@ -74,6 +74,38 @@ except:
     common_tf = set(data_processor.raw2tf(DATA_DIR, option='intersection')['tf'])
     feature_df = Feature().adjacentTFs(df, common_tf)
 
+# rename some target genes 
+tf_list = list(data_processor.raw2tf(DATA_DIR, option='intersection')['tf'])
+gm_list = [name + '_gm' for name in tf_list]
+k_list = [name + '_k' for name in tf_list]
+
+gene_list = ['SDF4', 'EEF1A1P9', 'B3GALT6', 'SSU72', 'AL645728.1', 'CDK11A', 'NEDD8', 'UBC', 'VASP']
+
+def rename(name):
+    if name in gene_list:
+        return name + '_2'
+    else:
+        return name
+
+gene_rename_gm = df[df['source'].isin(gm_list) & df['target'].isin(gene_list)]
+gene_rename_k = df[df['source'].isin(k_list) & df['target'].isin(gene_list)]
+
+gene_rename_gm['target'] = gene_rename_gm['target'].map(lambda name: name + '_gm')
+gene_rename_k['target'] = gene_rename_k['target'].map(lambda name: name + '_k')
+
+df = pd.concat([df, gene_rename_gm, gene_rename_k], axis=0).reset_index()[['cell_type', 'source', 'target', 'type', 'weight']]
+
+
+
+# add features for renamed genes
+feature_rename = feature_df.loc[gene_list]
+feature_rename_gm = feature_rename.copy(deep=True)
+feature_rename_k = feature_rename.copy(deep=True)
+
+feature_rename_gm.index = feature_rename_gm.index.map(lambda name: name + '_gm')
+feature_rename_k.index = feature_rename_k.index.map(lambda name: name + '_k')
+feature_df = pd.concat([feature_df, feature_rename_gm, feature_rename_k], axis=0)
+
 # %% [markdown]
 # ## Read graph
 
@@ -94,11 +126,11 @@ print(G.info())
 # %%
 # HinSAGE model 
 graphsage_generator = DirectedGraphSAGENodeGenerator(
-    G, batch_size=50, in_samples=[30, 10], out_samples=[30, 10], seed=0
+    G, batch_size=50, in_samples=[30, 5], out_samples=[30, 5], seed=0
 )
 
 graphsage_model = DirectedGraphSAGE(
-    layer_sizes=[64, 64], activations=["relu", "relu"], generator=graphsage_generator
+    layer_sizes=[128, 16], activations=["relu", "relu"], generator=graphsage_generator, aggregator=MeanPoolingAggregator
 )
 
 
